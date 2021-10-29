@@ -47,7 +47,7 @@ exports.createSignedTransaction = async function (input) {
     } catch (err) {
         console.error('Error reading private key' + err)
         throw Error('Error reading private key' + err)
-    }
+    }transactions
 }
 
 exports.verifySignature = async function (jwtString, publicKey) {

@@ -5,6 +5,7 @@ const axios = require('axios');
 const jose = require('node-jose');
 const Transaction = require('./models/Transaction');
 const {JWS} = require("node-jose");
+const {createSignedTransaction} = require("./crypto");
 exports.verifyToken = async function (req, res, next) {
 
     // Check Authorization header existence
@@ -41,7 +42,22 @@ exports.verifyToken = async function (req, res, next) {
     return next(); // Pass the execution to the next middleware function
 
 }
-
+async function sendRequestToBank(destinationBank,transactionAsJwt) {
+    return await sendPostRequest(destinationBank.transactionUrl,{jwt:transactionAsJwt})
+}
+async function sendPostRequest(url,data) {
+    return await sendRequest("post",url,data)
+}
+async function sendRequest(method,url,data) {
+    if (method === "post"){
+        await axios.post(url, data ).then(res => function(res) {
+            return JSON.parse(res)
+        }) }
+    if (method === "get") {
+        await axios.get(url, data ).then(res => function(res) {
+            return JSON.parse(res)
+        }) }
+}
 exports.refreshBanksFromCentralBank = async () => {
 
     try {

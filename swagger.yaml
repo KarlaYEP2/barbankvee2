@@ -274,6 +274,23 @@ paths:
       operationId: createtransaction
       summary: Create a transaction
       description: Creates a new instance of a `transaction`.
+  /transactions/b2b:
+    post:
+      tags:
+        - transactions
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+              examples:
+                Unknown sending bank:
+                  value:
+                    error: Unknown sending bank
+          description: Unknown sending bank
+      summary: Create a transaction between 2 banks
+      description: Create a transaction between 2 banks
 components:
   schemas:
     user:

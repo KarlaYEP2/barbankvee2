@@ -153,7 +153,7 @@ router.post('/b2b', async function (req, res) {
     const accountFromBankPrefix = payload.accountFrom.substring(0, 3)
 
     // Find source bank (document)
-    const accountFromBank = await Bank.findOne({bankPrefix: accountFromBankPrefix})
+    let accountFromBank = await Bank.findOne({bankPrefix: accountFromBankPrefix})
 
     if (!accountFromBank) {
 
@@ -163,8 +163,15 @@ router.post('/b2b', async function (req, res) {
 
             // 500
             return res.status(500).send({error: "refreshBanksFromCentralBank: " + result.error}) //
+
         }
-    }
+        // Try getting bank details again
+        accountFromBank = await Bank.findOne({bankPrefix: accountFromBankPrefix});
+
+        //Check for destination bank again
+        if (!accountFromBank) {
+            return res.status(400).send({"error": "Unknown sending bank"})
+    }}
 
     // Validate signature
     try {
