@@ -6,7 +6,7 @@ const Bank = require('../models/Bank');
 const {verifyToken, refreshBanksFromCentralBank} = require("../middlewares");
 const {JWK, JWS} = require('node-jose')
 const {join} = require('path')
-const {verifySignature, getPublicKey} = require("../crypto")
+const {verifySignature, getPublicKey, getKeystore} = require("../crypto")
 const base64url = require('base64url');
 const Buffer = require('buffer/').Buffer;
 
@@ -107,15 +107,7 @@ async function creditAccount(account, amount) {
 }
 
 router.get('/jwks', async function (req, res) {
-
-    // Add our private key from file to the keystore
-    console.log('/jwks: Reading keystore from json file into memory')
-    const keystoreAsJsonString = fs.readFileSync(join('.cert', 'keystore.json')).toString();
-    const keystore = await JWK.asKeyStore(keystoreAsJsonString)
-
-    // Return our keystore (only the public key derived from the imported private key) in JWKS (JSON Web Key Set) format
-    console.log('/jwks: Returning keystore without private key')
-
+const keystore = getKeystore()
     return res.send(keystore.toJSON())
 })
 
@@ -130,15 +122,9 @@ async function convertCurrency(payload, accountTo) {
 }
 
 router.post('/b2b', async function (req, res) {
-    try {
         const components = req.body.jwt.split('.')
         const payload = JSON.parse(base64url.decode(components[1]))
         const accountTo = await Account.findOne({number: payload.accountTo})
-    } catch (e) {
-
-        // 500 - Internal server error
-        return res.status(500).send({error: e.message})
-    }
 
     // Get source bank prefix
     ["accountFrom", "accountTo", "amount", "currency", "explanation", "senderName"].forEach(function (parameter) {
@@ -188,5 +174,7 @@ router.post('/b2b', async function (req, res) {
     const accountToOwner = await User.findOne({_id: accountTo.userId})
 
     //money laundering
-    await creditAccount(accountTo, req.body.amount)
+    await creditAccount(accountTo, amount)
+
+    return res.status(200).send({receiverName:accountToOwner})
 })

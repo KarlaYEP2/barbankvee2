@@ -16,6 +16,7 @@ exports.getKeystore = async function () {
         console.log('Generate keystore')
         await keystore.generate('RSA', 2048, {alg: 'RS256', use: 'sig'})
         fs.writeFileSync(keystoreFile, JSON.stringify(keystore.toJSON(true)))
+        return await JWK.asKeyStore(keystoreFile.toString())
     } else {
         console.log('Import keystore')
         const ks = fs.readFileSync(join('.cert', 'keystore.json'))

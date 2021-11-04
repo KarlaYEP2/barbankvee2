@@ -104,6 +104,7 @@ exports.processTransactions = async () => {
 
         // Calculate transaction expiry time
         if (isExpired(transaction)) {
+            console.log(transaction.id + ': Central bank isExpired')
             return await setStatus(transaction, 'Failed', 'Expired')
         }
 
@@ -113,6 +114,7 @@ exports.processTransactions = async () => {
         // Check if bank to was found and if not, refresh bank list and then attempt again and if still not found, set transaction status to failed and take the next transaction
         let result = exports.refreshBanksFromCentralBank();
         if (!result || typeof result.error !== 'undefined') {
+            console.log(transaction.id + ': Central bank refresh failed')
             return await setStatus(transaction, 'Failed', 'Central bank refresh failed: ' + result.error)
         }
 
@@ -138,6 +140,7 @@ exports.processTransactions = async () => {
 
                 //Check for destination bank again
                 if (!bankTo) {
+                    console.log(transaction.id + ': Invalid destination bank')
                     return await setStatus(transaction, 'Failed', 'Invalid destination bank')
                 }
             }
@@ -156,6 +159,7 @@ exports.processTransactions = async () => {
 
             // Check for any errors with the request to foreign bank and log errors to statusDetails and take the next transaction
             if (typeof response.error !== 'undefined') {
+                console.log(transaction.id + ': Central bank undefined')
                 return await setStatus(transaction, 'Failed', response.error)
             }
 
@@ -164,13 +168,15 @@ exports.processTransactions = async () => {
 
             // Update transaction status to completed
             await setStatus(transaction, 'Completed', 'finished')
+            console.log(transaction.id + ': Central bank Finished')
         } catch (e) {
             console.log(e)
 
+            console.log(transaction.id + ': Central bank Pending')
             return await setStatus(transaction, 'Pending', e.message)
         }
 
-    }, Error())
+    }, Error());
 
     // Call same function again after 1 sec
     setTimeout(exports.processTransactions, 1000)
