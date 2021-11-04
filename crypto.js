@@ -19,7 +19,9 @@ exports.getKeystore = async function () {
         return await JWK.asKeyStore(keystoreFile.toString())
     } else {
         console.log('Import keystore')
-        const ks = fs.readFileSync(join('.cert', 'keystore.json'))
+        // sir, this does not, AI SHIBAAAAAAAAAAAAAAAAAAAA
+        const ks = fs.readFileSync(keystoreFile)
+        console.log(ks.toJSON())
         return await JWK.asKeyStore(ks.toString())
     }
 }
@@ -48,7 +50,7 @@ exports.createSignedTransaction = async function (input) {
     } catch (err) {
         console.error('Error reading private key' + err)
         throw Error('Error reading private key' + err)
-    }transactions
+    }
 }
 
 exports.verifySignature = async function (jwtString, publicKey) {

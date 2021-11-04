@@ -43,21 +43,11 @@ exports.verifyToken = async function (req, res, next) {
 
 }
 async function sendRequestToBank(destinationBank,transactionAsJwt) {
-    return await sendPostRequest(destinationBank.transactionUrl,{jwt:transactionAsJwt})
+    await axios.post(destinationBank.transactionUrl, {jwt: transactionAsJwt}).then(res => function(res) {
+        return JSON.parse(res)
+    })
 }
-async function sendPostRequest(url,data) {
-    return await sendRequest("post",url,data)
-}
-async function sendRequest(method,url,data) {
-    if (method === "post"){
-        await axios.post(url, data ).then(res => function(res) {
-            return JSON.parse(res)
-        }) }
-    if (method === "get") {
-        await axios.get(url, data ).then(res => function(res) {
-            return JSON.parse(res)
-        }) }
-}
+
 exports.refreshBanksFromCentralBank = async () => {
 
     try {
@@ -111,12 +101,6 @@ exports.processTransactions = async () => {
         // Set transaction status to in progress
         await setStatus(transaction, 'In Progress')
 
-        // Check if bank to was found and if not, refresh bank list and then attempt again and if still not found, set transaction status to failed and take the next transaction
-        let result = exports.refreshBanksFromCentralBank();
-        if (!result || typeof result.error !== 'undefined') {
-            console.log(transaction.id + ': Central bank refresh failed')
-            return await setStatus(transaction, 'Failed', 'Central bank refresh failed: ' + result.error)
-        }
 
         // Get bank prefix
         const bankToPrefix = (transaction.accountTo).substr(0, 3);

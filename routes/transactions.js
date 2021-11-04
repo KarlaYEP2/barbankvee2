@@ -108,7 +108,7 @@ async function creditAccount(account, amount) {
 
 router.get('/jwks', async function (req, res) {
 const keystore = getKeystore()
-    return res.send(keystore.toJSON())
+    return res.send(keystore)
 })
 
 async function convertCurrency(payload, accountTo) {
